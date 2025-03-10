@@ -1,0 +1,166 @@
+.swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    background-color: #f0f0f0;
+    /* Example background color */
+}
+
+.main {
+    padding: 90px 0;
+}
+
+.slider-img {
+    width: 100%;
+    height: 360px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.slider-img img {
+    order-radius: 9px !important;
+}
+
+.swiper-slide {
+    background-color: #ffffff !important;
+}
+
+ion-title.md.title-default.hydrated {
+    font-size: 12px;
+    text-align: center;
+    margin-bottom: 4px;
+    font-family: 'Poppins';
+    padding: 0;
+    color: #4c3226;
+}
+
+ion-tab-button {
+    background: #4C3226;
+}
+
+.main-categoryimg {
+    position: relative;
+}
+
+.categoryimg1 {
+    margin-bottom: 10px;
+    height: 117px;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 9px;
+    overflow: hidden;
+}
+
+.freemlogin2 {
+    width: 125px;
+    height: 100%;
+    margin: auto;
+    margin-top: 64px;
+}
+
+.categoryimg {
+    width: 82px;
+    height: 82px;
+    margin: 0px;
+    /* border: 1px solid; */
+    object-fit: cover;
+    overflow: hidden;
+    border-radius: 100%;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.custom-background {
+    background-color: #ffcc00;
+    height: 100%;
+    width: 100%;
+}
+
+.element {
+    width: fit-content;
+    padding-bottom: 3px;
+    margin: auto;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-transform: math-auto;
+    font-family: "Cinzel", serif;
+}
+
+.element:after {
+    content: '';
+    display: block;
+    margin: auto;
+    height: 1px;
+    animation: underline 2s infinite;
+}
+
+.carousel-control-next-icon {
+    background-image: url(../public/img/right.png) !important;
+    background-size: auto !important;
+}
+
+.carousel-control-prev-icon {
+    background-image: url(../public/img/left.png) !important;
+    background-size: auto !important;
+}
+
+.button-native {
+    padding: 0 !important;
+    height: fit-content !important;
+}
+
+.smaldesignleft {
+    width: fit-content;
+    height: fit-content;
+    position: absolute;
+    right: 10%;
+    top: 24%;
+}
+
+.smaldesignright {
+    width: fit-content;
+    height: fit-content;
+    position: absolute;
+    left: 17%;
+    top: 9%;
+    width: 40px;
+    height: 40px;
+}
+
+
+@keyframes underline {
+    0% {
+        width: 0%;
+        background-color: saddlebrown;
+    }
+
+    100% {
+        width: 100%;
+        background-color: transparent;
+    }
+}
+
+
+.fade-in-left {
+    animation: fade-in-left 10s ease infinite;
+}
+
+@keyframes fade-in-left {
+    0% {
+        opacity: 1;
+        transform: translateX(-20px);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translateX(0px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(-20px);
+    }
+}

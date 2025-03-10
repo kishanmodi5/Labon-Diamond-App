@@ -1,0 +1,7 @@
+{
+  "name": "labondimoand",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
