@@ -58,12 +58,21 @@ function Login() {
             const response = await Axios.post('/userauth', {
                 username: formData.username,
                 password: formData.password,
+                rememberMe: formData.rememberMe,
             },
             )
 
             if (response.status === 200 && response.data.status === "success") {
                 setAuthToken(response.data, formData.rememberMe)
-                // router.push('/serch') // Redirect to dashboard after successful login
+                if (formData.rememberMe) {
+                    localStorage.setItem('rememberedUsername', formData.username);
+                    localStorage.setItem('rememberedPassword', formData.password);
+                    localStorage.setItem('rememberMeChecked', 'true');
+                } else {
+                    localStorage.removeItem('rememberedUsername');
+                    localStorage.removeItem('rememberedPassword');
+                    localStorage.removeItem('rememberMeChecked');
+                }
             } else {
                 setError(response.data.message || 'Login failed')
 
@@ -82,6 +91,23 @@ function Login() {
             setLoading(false)
         }
     }
+
+
+    useEffect(() => {
+        const savedUsername = localStorage.getItem('rememberedUsername');
+        const savedPassword = localStorage.getItem('rememberedPassword');
+        const savedRememberMe = localStorage.getItem('rememberMeChecked') === 'true';
+
+        if (savedRememberMe) {
+            setFormData(prev => ({
+                ...prev,
+                username: savedUsername || '',
+                password: savedPassword || '',
+                rememberMe: savedRememberMe,
+            }));
+        }
+    }, []);
+
 
     return (
         <>

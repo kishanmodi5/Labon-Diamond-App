@@ -65,8 +65,6 @@ function apps() {
 
 
     const handleclearstorage = () => {
-        localStorage.clear();
-
         sessionStorage.clear();
     }
 
