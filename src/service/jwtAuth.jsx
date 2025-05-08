@@ -1,7 +1,7 @@
 import jwtAxios from "axios";
 import { BACKEND_APP_URL } from '../config';
 
-export const baseURL = 'https://labonstkback.labon.diamonds/'
+export const baseURL = 'https://labonstkback.labon.diamonds'
 
 
 const Axios = jwtAxios.create({
@@ -52,9 +52,9 @@ export const setAuthToken = (data, isRememberMe) => {
     Axios.defaults.headers.common["Authorization"] = "Bearer " + data.token;
 
     if (isRememberMe) {
-      localStorage.setItem("token", data.token); // Store in localStorage for long-term
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("branches", JSON.stringify(data.branches));
+      sessionStorage.setItem("token", data.token); // Store in localStorage for long-term
+      sessionStorage.setItem("user", JSON.stringify(data.user));
+      sessionStorage.setItem("branches", JSON.stringify(data.branches));
     } else {
       sessionStorage.setItem("token", data.token); // Store in sessionStorage for session-only
       sessionStorage.setItem("user", JSON.stringify(data.user));

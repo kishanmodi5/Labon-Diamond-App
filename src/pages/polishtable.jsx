@@ -49,7 +49,7 @@ import Axios, { baseURL } from "../service/jwtAuth"
 import { useLocation } from 'react-router-dom';
 import { useHistory } from "react-router-dom";
 
-function Tablesearch() {
+function Polishtable() {
     const history = useHistory();
     const [selectedRows, setSelectedRows] = useState([]);
     const [sortBy, setSortBy] = useState("");
@@ -60,29 +60,29 @@ function Tablesearch() {
     const [loading, setLoading] = useState(true);
     const hasFetched = React.useRef(false);
     const location = useLocation();
-    const searchResult = location.state?.searchResult;
+    const searchResults = location.state?.searchResults;
     const [isLoading, setIsLoading] = useState(false);
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const [isLoadings, setIsLoadings] = useState(false);
-    const selectedOptions = location.state?.selectedOptions;
+    const selectedOptionss = location.state?.selectedOptionss;
 
 
     useEffect(() => {
-        if (searchResult && !hasFetched.current) {
-            setData(searchResult);
+        if (searchResults && !hasFetched.current) {
+            setData(searchResults);
             setLoading(false);
             hasFetched.current = true;
         }
-    }, [searchResult]);
+    }, [searchResults]);
 
 
 
     const handleRowSelect = (item) => {
         setSelectedRows((prevSelected) => {
-            const isSelected = prevSelected.some(selected => selected.STONE === item.STONE);
+            const isSelected = prevSelected.some(selected => selected.FL_SUB_LOT === item.FL_SUB_LOT);
             if (isSelected) {
-                return prevSelected.filter(selected => selected.STONE !== item.STONE);
+                return prevSelected.filter(selected => selected.FL_SUB_LOT !== item.FL_SUB_LOT);
             } else {
                 return [...prevSelected, item];
             }
@@ -153,34 +153,26 @@ function Tablesearch() {
     };
 
 
-    const handleaddwatchlist = async () => {
-        if (selectedRows?.length < 1) {
-            window.alert('Please select stone to add watchlist')
-        } else {
-
-            const users = localStorage.getItem('user') || sessionStorage.getItem('user')
-            const FL_COID = JSON.parse(users).FL_COID
-
-            try {
-                const response = await Axios.post('user/watchlist/add', {
-                    lotIds: selectedRows.map(row => row.STONE),
-                    inventoryType: 'POLISH-SINGLE',
-                    coid: FL_COID
-                })
-                if (response.status === 200) {
-                    // window.alert('Added to watchlist');
-                    setToastMessage(response?.data?.status);
-                    setShowToast(true);
-                    setSelectedRows([]);
-                    window.location.reload();
-                }
-            } catch (error) {
-                console.error("error to handle basket", error)
-                setToastMessage(error.response.data)
-                // setToastMessage('User not found.');
-                setShowToast(true);
-            }
+    const handleaddwatchlist = () => {
+        if (selectedRows.length === 0) {
+            window.alert('Please select stones to add to the Watchlist.');
+            return;
         }
+    
+        let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
+    
+        selectedRows.forEach(item => {
+            const alreadyInWatchlist = watchlist.some(watchlistItem => watchlistItem.FL_SUB_LOT === item.FL_SUB_LOT);
+            if (!alreadyInWatchlist) {
+                watchlist.push(item);
+            }
+        });
+    
+        localStorage.setItem('watchlist', JSON.stringify(watchlist));
+        setToastMessage('Added to Watchlist!');
+        setShowToast(true);
+        setSelectedRows([]);
+        window.location.reload();
     }
 
 
@@ -188,8 +180,8 @@ function Tablesearch() {
         try {
             const response = await Axios.post('user/userbasket', {
                 type: 'I',
-                stone_id: selectedRows.map(row => row.STONE),
-                stype: 'POLISH-SINGLE'
+                stone_id: selectedRows.map(row => row.FL_SUB_LOT),
+                stype: 'POLISH-PARCEL'
             })
             if (response.status === 200) {
                 // const eventBus = getEventBus();
@@ -243,21 +235,73 @@ function Tablesearch() {
     }
 
     const basketredireck = async () => {
-        console.log('Redirecting with selected options:', selectedOptions);
+        console.log('Redirecting with selected options:', selectedOptionss);
         history.push({
-            pathname: `/home`,
-            state: { selectedOptions: selectedOptions }
+            pathname: `/polish`,
+            state: { selectedOptionss: selectedOptionss }
           });
     };
 
-    // const basketredireck = async () => {
-    //     // console.log('Redirecting with selected options:', selectedOptions);
-    //     // history.push({
-    //     //     pathname: `/home`,
-    //     //     state: { selectedOptions: selectedOptions }
-    //     //   });
-    //     history.push('/home')
-    // };
+
+    const transformData = (data) => {
+        const csvData = data?.map((item) => ({
+            'LOT NO': item.FL_SUB_LOT,
+            Type: item.FL_TYPE,
+            Carats: item.FL_CARATS,
+            Clarity: item.FL_CLARITY,
+            Color: item.FL_COLOR,
+            'Co ID': item.FL_COID,
+            Height: item.FL_HIGHT,
+            Length: item.FL_LENGTH,
+            Main_LOT: item.FL_MAIN_LOT,
+            Shape: item.FL_SHAPE_NAME,
+            'MM Size': item.FL_SIZE,
+            'Width': item.FL_WIDTH,
+            'Location': item.FL_BRID
+        }));
+
+        return csvData;
+    };
+
+    const convertToCSV = (data) => {
+        if (!Array.isArray(data) || data.length === 0) return '';
+
+        // Extract headers (keys of the first object)
+        const headers = Object.keys(data[0]);
+
+        // Convert each row to a CSV line
+        const rows = data.map((row) =>
+            headers.map((header) => `"${row[header] ?? ''}"`).join(',')
+        );
+
+        // Combine headers and rows
+        return [headers.join(','), ...rows].join('\n');
+    };
+
+    // Function to trigger CSV download
+    const downloadCSV = (csvData, fileName = 'data.csv') => {
+        const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', fileName);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handledownload = () => {
+        if (selectedRows.length === 0) {
+            window.alert('Please select stones to export.');
+            return;
+        }
+        const transformedData = transformData((selectedRows));
+        const csvData = convertToCSV(transformedData);
+        downloadCSV(csvData, 'diamond_data.csv');
+        console.log(transformedData);
+    }
 
 
     const handleExportAllToExcel = async () => {
@@ -303,7 +347,7 @@ function Tablesearch() {
             <Header />
             <IonContent color="primary" style={{ paddingBottom: '80x', marginBottom: '100px', marginTop: '10px', }}>
                 <div style={{ marginTop: '20px' }}>
-                    <h5 class="text-center mb-5 element">Polish Certified Table</h5>
+                    <h5 class="text-center mb-5 element">Polish Parcel Table </h5>
                 </div>
                 <div className='myquotations' style={{ marginBottom: '100px' }}>
                     <IonGrid>
@@ -321,13 +365,11 @@ function Tablesearch() {
 
                                         <button className="sumbuttontable" onClick={handleaddBasket} >Add to Basket</button>
 
-                                        <button className="sumbuttontable" onClick={handleExportSelectedToExcel} disabled={isLoading}>{isLoading ? "Download..." : "Export to Excel"}</button>
-
-                                        <button className="sumbuttontable" onClick={handleExportAllToExcel} disabled={isLoadings}>{isLoadings ? "Download..." : "Export All to Excel"}</button>
+                                        <button className="sumbuttontable"onClick={handledownload} disabled={isLoading}>{isLoading ? "Download..." : "Export to Excel"}</button>
                                         <button className="sumbuttontable" onClick={basketredireck}>Modify Search</button>
                                         <button className="sumbuttontable" onClick={handleaddwatchlist}>Add To WatchList</button>
                                         <button onClick={handleClick} className={showDropdown ? "dropdown show" : "dropdown"}>
-                                            <div style={{ display: 'flex',  }}>
+                                            <div style={{ display: 'flex',marginTop:'10px'  }}>
                                                 <span style={{ background: '#fff6ec', fontSize: '17px', color:"#4c3226" }}>Page Size:</span>
                                                 <select
                                                     style={{ margin: '-5px 0px 0px 5px' }}
@@ -414,96 +456,63 @@ function Tablesearch() {
                                                     </label>
                                                 </th>
                                                 {/* <th>SrNo</th> */}
-                                                <th>Status</th>
-                                                <th>Location</th>
-                                                <th>StoneId</th>
-                                                <th style={{ minWidth: '55px' }} onClick={() => handleSort("LAB")}> Lab {sortBy === "LAB" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
-                                                <th>ReportNo</th>
-                                                <th style={{ minWidth: '70px' }} onClick={() => handleSort("SHAPE")}>
-                                                    Shape {sortBy === "SHAPE" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}
-                                                </th>
-                                                <th style={{ minWidth: '64px' }} onClick={() => handleSort("CARATS")}>
-                                                    Carats {sortBy === "CARATS" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
-                                                <th style={{ minWidth: '64px' }} onClick={() => handleSort("COLOR")}>
-                                                    Color {sortBy === "COLOR" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
-                                                <th style={{ minWidth: '75px' }} onClick={() => handleSort("CLARITY")}>
-                                                    Clarity {sortBy === "CLARITY" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
-                                                <th onClick={() => handleSort("CUT")}>
-                                                    Cut{sortBy === "CUT" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
-                                                <th onClick={() => handleSort("POLISH")}>
-                                                    Polish{sortBy === "POLISH" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
-                                                <th onClick={() => handleSort("SYMM")}>
-                                                    Symm{sortBy === "SYMM" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
-                                                <th>Measurements</th>
-                                                <th style={{ minWidth: '62px' }}>Table %</th>
-                                                <th style={{ minWidth: '62px' }}>Depth %</th>
-                                                <th>Ratio</th>
-                                                <th>H&A</th>
-                                                <th>RapPrice</th>
-                                                <th style={{ minWidth: '55px' }}>Discount %</th>
-                                                <th>Price/Cts</th>
-                                                <th onClick={() => handleSort("RAP_PRICE")}>
-                                                    Amount{sortBy === "RAP_PRICE" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
-                                                <th>View Offer</th>
-                                                <th>Certificate</th>
-                                                <th>VideoLink</th>
+                                                <th>Type</th>
+                                            <th>Location</th>
+                                            <th>In Stock</th>
+                                            <th>LOT NO</th>
+                                            <th>Carats</th>
+                                            <th>Clarity</th>
+                                            <th>CO ID</th>
+                                            <th>Color</th>
+                                            <th>Height</th>
+                                            <th>Length</th>
+                                            <th>Main_LOT</th>
+                                            <th>Shape</th>
+                                            <th>MM Size</th>
+                                            <th>Width</th>
                                             </tr>
                                         </thead>
                                         <tbody className="tablecss">
-                                            {paginatedData?.map((item, index) => (
+                                        {paginatedData?.length > 0 ? (
+                                            paginatedData?.map((item, index) => (
                                                 <tr key={index}>
                                                     <td>
                                                         <label className="checkbox style-a" style={{ maxWidth: '30px' }}>
                                                             <input
                                                                 style={{ maxWidth: '30px' }}
                                                                 type="checkbox"
-                                                                checked={selectedRows?.some(selected => selected?.STONE === item?.STONE)}
+                                                                checked={selectedRows?.some(selected => selected?.FL_SUB_LOT === item?.FL_SUB_LOT)}
                                                                 onChange={() => handleRowSelect(item)}
                                                             />
                                                             <div className="checkbox__checkmark"></div>
                                                         </label>
                                                     </td>
-                                                    {/* <td>{item.srNo}</td> */}
-                                                    <td>{item.STATUS}</td>
+                                                   
+                                                    <td>{item.FL_TYPE}</td>
                                                     <td>{item.FL_BRID}</td>
-                                                    <td>{item.STONE}</td>
-                                                    <td><a style={{ color: 'blue' }} href={item.LAB === "IGI" ? `https://www.igi.org/reports/verify-your-report?r=${item.REPORTNO}` : `https://www.gia.edu/report-check?reportno=${item.REPORTNO}`} target="_blank">{item.LAB}</a></td>
-                                                    <td>{item.REPORTNO}</td>
-                                                    <td>{item.SHAPE}</td>
-                                                    <td>{item.CARATS}</td>
-                                                    <td>{item.COLOR}</td>
-                                                    <td>{item.CLARITY}</td>
-                                                    <td>{item.CUT}</td>
-                                                    <td>{item.POLISH}</td>
-                                                    <td>{item.SYMM}</td>
-                                                    <td>{item.FL_MEASUREMENTS}</td>
-                                                    <td>{item.FL_TABLE_PER?.toFixed(2)}</td>
-                                                    <td>{item.FL_DEPTH_PER?.toFixed(2)}</td>
-                                                    <td>{item.FL_RATIO || '-'}</td>
-                                                    <td>{item.ha}</td>
-                                                    <td>{item.RAP_PRICE?.toFixed(2)}</td>
-                                                    <td>{item.ASK_DISC || '-'}</td>
-                                                    <td>{(item.RAP_PRICE * (100 - Number(item.ASK_DISC)) / 100).toFixed(2)}</td>
-                                                    <td>{((item.RAP_PRICE * (100 - Number(item.ASK_DISC)) / 100) * item.CARATS)?.toFixed(2)}</td>
-                                                    <td>{item.viewoffer}</td>
-                                                    <td><a href={item.LAB === "IGI" ? `https://www.igi.org/reports/verify-your-report?r=${item.REPORTNO}` : `https://www.gia.edu/report-check?reportno=${item.REPORTNO}`} target="_blank" style={{ color: 'blue' }}>PDF</a></td>
-                                                    <td><a href={`https://www.dnav360.com/vision/dna.html?d=${item.STONE}&ic=1`} target="_blank" style={{ color: 'blue' }}>VIDEO</a></td>
+                                                    <td>A</td>
+                                                    <td>{item.FL_SUB_LOT}</td>
+                                                    <td>{item.FL_CARATS}</td>
+                                                    <td>{item.FL_CLARITY}</td>
+                                                    <td>{item.FL_COID}</td>
+                                                    <td>{item.FL_COLOR}</td>
+                                                    <td>{item.FL_HIGHT}</td>
+                                                    <td>{item.FL_LENGTH}</td>
+                                                    <td>{item.FL_MAIN_LOT}</td>
+                                                    <td>{item.FL_SHAPE_NAME}</td>
+                                                    <td>{item.FL_SIZE}</td>
+                                                    <td>{item.FL_WIDTH}</td>
                                                 </tr>
-                                            ))}
-
-                                            <tr className="tablecss">
-                                                <th></th>
-                                                <th colSpan={6}></th>
-                                                <th>{totals.CARATS?.toFixed(2)}</th>
-                                                <th colSpan={10}></th>
-                                                <th></th>
-                                                <th>{totals.ASK_DISC?.toFixed(2)}</th>
-                                                <th>{totals.pricects?.toFixed(2)}</th>
-                                                <th>{totals.amount?.toFixed(2)}</th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
+                                           ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="15" className="text-center">
+                                                    No data found.
+                                                </td>
                                             </tr>
+                                        )}
+
+                           
                                         </tbody>
                                     </table>
                                 </div>
@@ -522,4 +531,4 @@ function Tablesearch() {
         </ >
     );
 }
-export default Tablesearch; 
+export default Polishtable; 

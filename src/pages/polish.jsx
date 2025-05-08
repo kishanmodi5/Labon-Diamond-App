@@ -15,14 +15,14 @@ import {
 } from "@ionic/react";
 import Header from './head';
 import Axios, { baseURL } from "../service/jwtAuth";
-import { SearchContext } from "../context/SearchContext";
+import { PolishContext } from "../context/PolishContext";
 import { useHistory, useLocation } from "react-router-dom";
 
-const Home = () => {
+const Polish = () => {
   const history = useHistory();
   const [showModal, setShowModal] = useState(false);
-  const {setSearchState, searchState } = useContext(SearchContext);
-  const [selectedOptions, setSelectedOptions] = useState({});
+  const { setSearchpolish, searchpolish } = useContext(PolishContext);
+  const [selectedOptionss, setSelectedOptionss] = useState({});
   const [carat, setCarat] = useState({ from: "", to: "" });
   const [US$CT, setUS$CT] = useState({ from: "", to: "" });
   const [stoneId, setStoneId] = useState("");
@@ -64,25 +64,28 @@ const Home = () => {
       { name: "Asscher", shapeicon: "ico-shp icon-asscher-shape" }
       // { name: "Others", shapeicon: "ico-shp icon-others-shape" },
     ],
-    Color: ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'FANCY INTENCE PINK', 'FANCY BROWN', 'BLUE', 'FANCY INTENSE BLUE', 'FANCY INTENCE YELLOW', 'FANCY VIIVD PINK'],
-    Clarity: ['FL', 'IF', 'VVS1', 'VVS2', 'VS1', 'VS2', 'SI1', 'SI2', 'SI3', 'I1', 'I2', 'I3'],
-    Cut: ['ID', 'EX', 'VG'],
-    Lab: ['IGI', 'GIA', 'GSI', 'NONC', 'GCAL', 'NO_CERT'],
-    Polish: ['ID', 'EX', 'VG', 'GD', 'FR'],
-    location: [],
-    Symm: ['EX', 'VG', 'GD', 'FR', 'G'],
-    Flour: ["NON", "FNT", "MED", "SL", "VSL", "STG", "VST"],
+    Color: ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'G+', 'F.I.BLUE'],
+    Clarity: ['VS+', 'SI+', 'FL', 'IF', 'VVS1', 'VVS2', 'VS1', 'VS2', 'SI1', 'SI2', 'SI3', 'I1', 'I2', 'I3'],
+    FL_MAIN_LOT: ['-2', '+2-6.5', '+6.5-11', '+11-14', '1/10', '1/6', '1/5', '1/4', '1/3', '3/8', '1/2', '3/4', 'None', '+7-10', '-', '+1.5-2', '1.04DABBI', '1.00-1.49', '+00-0', '+000-00', '+0-1'],
+    // Cut: ['ID', 'EX', 'VG'],
+    // Lab: ['IGI', 'GIA', 'GSI', 'NONC', 'GCAL', 'NO_CERT'],
+    // Polish: ['ID', 'EX', 'VG', 'GD', 'FR'],
+    // Symm: ['EX', 'VG', 'GD', 'FR', 'G'],
+    // Flour: ["NON", "FNT", "MED", "SL", "VSL", "STG", "VST"],
+    location: []
   };
+
+
 
   const storedData = sessionStorage.getItem('branches');
   const datas = JSON.parse(storedData);
-  
+
+
   // Populate the location category with branch names
   const locations = datas?.map(branch => branch.FL_BRANCH_NAME);
-  
+
   // Add the location category to categories
   categories.location = locations;
-
 
   const handleOthersClick = () => {
     setShowVVS2((prev) => !prev);
@@ -95,65 +98,66 @@ const Home = () => {
   const closeModal = () => setShowModal(false);
 
   useEffect(() => {
-    if (searchState) {
-      setSelectedOptions({
-        SHAPES: searchState.SHAPE || [],
-        Clarity: searchState.CLARITY || [],
-        Color: searchState.COLOR || [],
-        Cut: searchState.CUT || [],
-        Lab: searchState.LAB || [],
-        Polish: searchState.POLISH || [],
-        Symm: searchState.SYMM || [],
-        Flour: searchState.FLOUR || [],
-        location: searchState.location || [],
+    if (searchpolish) {
+      setSelectedOptionss({
+        SHAPES: searchpolish.SHAPE || [],
+        Clarity: searchpolish.CLARITY || [],
+        Color: searchpolish.COLOR || [],
+        // Cut: searchpolish.CUT || [],
+        // Lab: searchpolish.LAB || [],
+        // Polish: searchpolish.POLISH || [],
+        // Symm: searchpolish.SYMM || [],
+        // Flour: searchpolish.FLOUR || [],
+        location: searchpolish.location || [],
+        FL_MAIN_LOT: searchpolish.FL_MAIN_LOT || [],
       });
 
       setCarat({
-        from: searchState.FromCarate || "",
-        to: searchState.ToCarate || "",
+        from: searchpolish.FromCarate || "",
+        to: searchpolish.ToCarate || "",
       });
 
       setUS$CT({
-        from: searchState.FromUSCT || "",
-        to: searchState.ToUSCT || "",
+        from: searchpolish.FromUSCT || "",
+        to: searchpolish.ToUSCT || "",
       });
 
-      setStoneId(searchState.stoneCert || "");
+      setStoneId(searchpolish.stoneCert || "");
 
       setAdvanceSearchFields({
-        tableFrom: searchState.FromTable_per || "",
-        tableTo: searchState.ToTable_per || "",
-        depthFrom: searchState.FromDepth_per || "",
-        depthTo: searchState.ToDepth_per || "",
-        ratioFrom: searchState.FromRatio || "",
-        ratioTo: searchState.ToRatio || "",
-        memo: !!searchState.Memo,
-        available: !!searchState.A,
-        hold: !!searchState.Hold,
+        tableFrom: searchpolish.FromTable_per || "",
+        tableTo: searchpolish.ToTable_per || "",
+        depthFrom: searchpolish.FromDepth_per || "",
+        depthTo: searchpolish.ToDepth_per || "",
+        ratioFrom: searchpolish.FromRatio || "",
+        ratioTo: searchpolish.ToRatio || "",
+        memo: !!searchpolish.Memo,
+        available: !!searchpolish.A,
+        hold: !!searchpolish.Hold,
       });
 
       setIsAdvanceSearchOpen(
         !!(
-          searchState.FromTable_per ||
-          searchState.ToTable_per ||
-          searchState.FromDepth_per ||
-          searchState.ToDepth_per ||
-          searchState.FromRatio ||
-          searchState.ToRatio ||
-          searchState.Memo ||
-          searchState.A ||
-          searchState.Hold
+          searchpolish.FromTable_per ||
+          searchpolish.ToTable_per ||
+          searchpolish.FromDepth_per ||
+          searchpolish.ToDepth_per ||
+          searchpolish.FromRatio ||
+          searchpolish.ToRatio ||
+          searchpolish.Memo ||
+          searchpolish.A ||
+          searchpolish.Hold
         )
       );
     }
-  }, [searchState]);
+  }, [searchpolish]);
 
 
 
   useEffect(() => {
-    const storedOptions = localStorage.getItem('selectedOptions');
+    const storedOptions = localStorage.getItem('selectedOptionss');
     if (storedOptions) {
-      setSelectedOptions(JSON.parse(storedOptions));
+      setSelectedOptionss(JSON.parse(storedOptions));
       // console.log('Stored Options:', JSON.parse(storedOptions));
     }
   }, []);
@@ -163,24 +167,24 @@ const Home = () => {
   // }, [selectedOptions]);
 
   useEffect(() => {
-    if (location.state?.selectedOptions) {
-      setSelectedOptions(location.state.selectedOptions);
+    if (location.state?.selectedOptionss) {
+      setSelectedOptionss(location.state.selectedOptionss);
     }
-  }, [location.state?.selectedOptions]);
+  }, [location.state?.selectedOptionss]);
 
   const handleCheckboxChange = (category, option) => {
-    setSelectedOptions((prev) => {
+    setSelectedOptionss((prev) => {
       const newSelected = { ...prev };
       if (!newSelected[category]) newSelected[category] = [];
       if (newSelected[category].includes(option)) {
         newSelected[category] = newSelected[category].filter((item) => item !== option);
       } else {
         newSelected[category] = [...newSelected[category], option];
-        
+
       }
       return newSelected;
     });
-    
+
   };
 
 
@@ -192,9 +196,9 @@ const Home = () => {
         const response = await Axios.get('search/parmas?type=single');
         if (isMounted) {
           setData(response.data.data); // Update state only if the component is still mounted
-          
+
         }
-        
+
       } catch (err) {
         if (isMounted) {
           setError("Failed to fetch data. Please try again."); // Set error state
@@ -229,20 +233,21 @@ const Home = () => {
   const handleSubmit = async () => {
 
     const payload = {
-      CLARITY: selectedOptions.Clarity || [],
-      COLOR: selectedOptions.Color || [],
-      CUT: selectedOptions.Cut || [],
+      CLARITY: selectedOptionss.Clarity || [],
+      COLOR: selectedOptionss.Color || [],
+      // CUT: selectedOptions.Cut || [],
       FromCarate: carat.from || "",
       ToCarate: carat.to || "",
       FromUSCT: US$CT.from || "",
       ToUSCT: US$CT.to || "",
-      LAB: selectedOptions.Lab || [],
-      POLISH: selectedOptions.Polish || [],
-      SHAPE: selectedOptions.SHAPES || [],
-      SYMM: selectedOptions.Symm || [],
-      location: selectedOptions.location|| [],
+      // LAB: selectedOptions.Lab || [],
+      // POLISH: selectedOptions.Polish || [],
+      SHAPE: selectedOptionss.SHAPES || [],
+      // SYMM: selectedOptions.Symm || [],
+      location: selectedOptionss.location || [],
+      FL_MAIN_LOT: selectedOptionss.FL_MAIN_LOT || [],
       stoneCert: stoneId || "",
-      FLOUR: selectedOptions.Flour || [],
+      // FLOUR: selectedOptions.Flour || [],
       ...(isAdvanceSearchOpen && {
 
         FromTable_per: advanceSearchFields.tableFrom || "",
@@ -289,20 +294,21 @@ const Home = () => {
 
     setIsLoading(true);
     const payload = {
-      CLARITY: selectedOptions.Clarity || [],
-      COLOR: selectedOptions.Color || [],
-      CUT: selectedOptions.Cut || [],
+      CLARITY: selectedOptionss.Clarity || [],
+      COLOR: selectedOptionss.Color || [],
+      // CUT: selectedOptions.Cut || [],
       FromCarate: carat.from || "",
       ToCarate: carat.to || "",
       FromUSCT: US$CT.from || "",
       ToUSCT: US$CT.to || "",
-      LAB: selectedOptions.Lab || [],
-      POLISH: selectedOptions.Polish || [],
-      SHAPE: selectedOptions.SHAPES || [],
-      SYMM: selectedOptions.Symm || [],
-      location: selectedOptions.location || [],
+      // LAB: selectedOptions.Lab || [],
+      // POLISH: selectedOptions.Polish || [],
+      SHAPE: selectedOptionss.SHAPES || [],
+      // SYMM: selectedOptions.Symm || [],
+      location: selectedOptionss.location || [],
       stoneCert: stoneId || "",
-      FLOUR: selectedOptions.Flour || [],
+      FL_MAIN_LOT: selectedOptionss.FL_MAIN_LOT || [],
+      // FLOUR: selectedOptions.Flour || [],
       ...(isAdvanceSearchOpen && {
 
         FromTable_per: advanceSearchFields.tableFrom || "",
@@ -320,24 +326,24 @@ const Home = () => {
       }),
     };
 
-    const cleanPayload = Object.fromEntries(
+    const cleanPayloads = Object.fromEntries(
       Object.entries(payload).filter(([_, value]) => value !== undefined && value !== "" && !(Array.isArray(value) && value.length === 0))
     );
 
-    setSearchState(cleanPayload);
+    setSearchpolish(cleanPayloads);
 
     try {
-      const response = await Axios.post('/search/stoneUser', JSON.stringify(cleanPayload));
+      const response = await Axios.post('search/bulk/stoneUser', JSON.stringify(cleanPayloads));
 
       if (response.status === 200) {
         // Update state here if necessary
-        setSearchState(response.data.result);
+        setSearchpolish(response.data.result);
         setToastMessage(response?.data?.status);
         setShowToast(true);
         // Navigate to the new page
         history.push({
-          pathname: `/tableshow`,
-          state: { searchResult: response.data.result, selectedOptions: selectedOptions }
+          pathname: `/polishtableshow`,
+          state: { searchResults: response.data.result, selectedOptionss: selectedOptionss }
         });
         window.location.reload()
       } else {
@@ -363,14 +369,14 @@ const Home = () => {
       <IonContent>
         <IonGrid style={{ marginBottom: "20px" }}>
           <div style={{ marginTop: '20px' }}>
-            <h5 class="text-center mb-5 element">Polish Certified</h5>
+            <h5 class="text-center mb-5 element">Polish Parcel</h5>
           </div>
           <div style={{ display: "flex", justifyContent: "start", alignContent: "center", gap: "15px",padding:"20px 7px"}}>
             <a href='/home'>
-              <button className="sumbutton ">Polish Certified</button>
+              <button className="sumbutton sumbutton-11">Polish Certified</button>
             </a>
             <a href='/polish'>
-              <button type="button" class="sumbutton sumbutton-11">Polish Parcel</button>
+              <button type="button" class="sumbutton ">Polish Parcel</button>
             </a>
           </div>
           <IonRow>
@@ -379,7 +385,7 @@ const Home = () => {
                 <div className="checkbox-group">
                   {categories.Shape.map((option) => (
                     <span key={option.name}
-                      className={`checkbox-label ${selectedOptions.SHAPES?.includes(option.name.toUpperCase()) ? 'selected' : ''}`}
+                      className={`checkbox-label ${selectedOptionss.SHAPES?.includes(option.name.toUpperCase()) ? 'selected' : ''}`}
                       onClick={() => handleCheckboxChange("SHAPES", option.name.toUpperCase())}>
                       {option.name}
                       <i className={option.shapeicon}></i>
@@ -396,7 +402,7 @@ const Home = () => {
                     <div className="checkbox-group">
                       {data?.SHAPE?.map((option) => (
                         <span key={option.name}
-                          className={`checkbox-label ${selectedOptions.SHAPES?.includes(option.name.toUpperCase()) ? 'selected' : ''}`}
+                          className={`checkbox-label ${selectedOptionss.SHAPES?.includes(option.name.toUpperCase()) ? 'selected' : ''}`}
                           onClick={() => handleCheckboxChange("SHAPES", option.name.toUpperCase())}>
                           {option.name}
                           <i className={option.CLASS_NAME}></i>
@@ -456,8 +462,26 @@ const Home = () => {
               </div>
             </IonCol>
           </IonRow>
-
-
+          <IonRow>
+            <IonCol size="12">
+              <div className="main-box">
+                {["FL_MAIN_LOT"].map((category) => (
+                  <div className="mainbox" key={category}>
+                    <h5 style={{ textTransform: 'uppercase', marginBottom: '10px' }}>Carat Range</h5>
+                    <div className="checkbox-group">
+                      {categories[category].map((option) => (
+                        <span key={option}
+                          className={`checkbox-label ${selectedOptionss[category]?.includes(option) ? 'selected' : ''}`}
+                          onClick={() => handleCheckboxChange(category, option)}>
+                          {option}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </IonCol>
+          </IonRow>
           <IonRow>
             <IonCol size="12">
               <div className="main-box">
@@ -467,7 +491,7 @@ const Home = () => {
                     <div className="checkbox-group">
                       {categories[category].map((option) => (
                         <span key={option}
-                          className={`checkbox-label ${selectedOptions[category]?.includes(option) ? 'selected' : ''}`}
+                          className={`checkbox-label ${selectedOptionss[category]?.includes(option) ? 'selected' : ''}`}
                           onClick={() => handleCheckboxChange(category, option)}>
                           {option}
                         </span>
@@ -485,7 +509,7 @@ const Home = () => {
                     <div className="checkbox-group">
                       {categories[category].map((option) => (
                         <span key={option}
-                          className={`checkbox-label ${selectedOptions[category]?.includes(option) ? 'selected' : ''}`}
+                          className={`checkbox-label ${selectedOptionss[category]?.includes(option) ? 'selected' : ''}`}
                           onClick={() => handleCheckboxChange(category, option)}>
                           {option}
                         </span>
@@ -495,8 +519,27 @@ const Home = () => {
                 ))}
               </div>
             </IonCol>
-
-            <IonCol size="12">
+         
+              <IonCol size="12">
+                <div className="main-box">
+                  {["location"]?.map((category) => (
+                    <div className="mainbox" key={category}>
+                      <h5 style={{ textTransform: 'uppercase', marginBottom: '10px' }}>{category}</h5>
+                      <div className="checkbox-group">
+                        {categories[category]?.map((option) => (
+                          <span key={option}
+                            className={`checkbox-label ${selectedOptionss[category]?.includes(option) ? 'selected' : ''}`}
+                            onClick={() => handleCheckboxChange(category, option)}>
+                            {option}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </IonCol>
+           
+            {/* <IonCol size="12">
               <div className="main-box">
                 {["Cut"].map((category) => (
                   <div className="mainbox" key={category}>
@@ -513,8 +556,8 @@ const Home = () => {
                   </div>
                 ))}
               </div>
-            </IonCol>
-            <IonCol size="12">
+            </IonCol> */}
+            {/* <IonCol size="12">
               <div className="main-box">
                 {["Lab"].map((category) => (
                   <div className="mainbox" key={category}>
@@ -531,8 +574,8 @@ const Home = () => {
                   </div>
                 ))}
               </div>
-            </IonCol>
-            <IonCol size="12">
+            </IonCol> */}
+            {/* <IonCol size="12">
               <div className="main-box">
                 {["Polish"].map((category) => (
                   <div className="mainbox" key={category}>
@@ -549,8 +592,8 @@ const Home = () => {
                   </div>
                 ))}
               </div>
-            </IonCol>
-            <IonCol size="12">
+            </IonCol> */}
+            {/* <IonCol size="12">
               <div className="main-box">
                 <h5 style={{ textTransform: 'uppercase', marginBottom: '10px' }}>US$/CT</h5>
                 <IonRow>
@@ -574,9 +617,9 @@ const Home = () => {
                   </IonCol>
                 </IonRow>
               </div>
-            </IonCol>
+            </IonCol> */}
 
-            <IonCol size="12">
+            {/* <IonCol size="12">
               <div className="main-box">
                 {["Symm"].map((category) => (
                   <div className="mainbox" key={category}>
@@ -593,9 +636,9 @@ const Home = () => {
                   </div>
                 ))}
               </div>
-            </IonCol>
+            </IonCol> */}
 
-            <IonCol size="12">
+            {/* <IonCol size="12">
               <div className="main-box">
                 {["Flour"].map((category) => (
                   <div className="mainbox" key={category}>
@@ -612,25 +655,25 @@ const Home = () => {
                   </div>
                 ))}
               </div>
-            </IonCol>
-            <IonCol size="12">
-            <div className="main-box">
-                  {["location"]?.map((category) => (
-                    <div className="mainbox" key={category}>
-                      <h5 style={{ textTransform: 'uppercase', marginBottom: '10px' }}>{category}</h5>
-                      <div className="checkbox-group">
-                        {categories[category]?.map((option) => (
-                          <span key={option}
-                            className={`checkbox-label ${selectedOptions[category]?.includes(option) ? 'selected' : ''}`}
-                            onClick={() => handleCheckboxChange(category, option)}>
-                            {option}
-                          </span>
-                        ))}
-                      </div>
+            </IonCol> */}
+            {/* <IonCol size="12">
+              <div className="main-box">
+                {["location"].map((category) => (
+                  <div className="mainbox" key={category}>
+                    <h5 style={{ textTransform: 'uppercase', marginBottom: '10px' }}>{category}</h5>
+                    <div className="checkbox-group">
+                      {categories[category].map((option) => (
+                        <span key={option}
+                          className={`checkbox-label ${selectedOptions[category]?.includes(option) ? 'selected' : ''}`}
+                          onClick={() => handleCheckboxChange(category, option)}>
+                          {option}
+                        </span>
+                      ))}
                     </div>
-                  ))}
-                </div>
-            </IonCol>
+                  </div>
+                ))}
+              </div>
+            </IonCol> */}
           </IonRow>
 
           <IonRow>
@@ -836,4 +879,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Polish;

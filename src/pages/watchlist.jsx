@@ -56,26 +56,39 @@ function Watchlist() {
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const isFetching = useRef(false)
+    const [tabselect, settabselect] = useState({
+        single: true,
+        parcel: false
+    });
 
-    const fetchData = async () => {
-        if (isFetching.current) return;
-        isFetching.current = true;
-        try {
-            const response = await Axios.get('user/watchlist');
+    
 
-            if (response.status === 200) {
-                setData(response?.data?.data); // Update state only if the component is still mounted
+    const fetchData = async (single) => {
+        if (isFetching.current) return; 
+        isFetching.current = true; 
 
+        if (single === 'parcel') {
+        
+            const watchlistdata = JSON.parse(localStorage.getItem('watchlist'));
+            setData(watchlistdata)
+            
+        } else {
+            
+            try {
+                const response = await Axios.get('user/watchlist');
+
+                if (response.status === 200) {
+                    setData(response?.data?.data); 
+                    
+                }
+            }
+            catch (err) {
+                console.log("Failed to fetch data. Please try again."); 
             }
         }
-        catch (err) {
-            console.log("Failed to fetch data. Please try again."); // Set error state
-        }
-        finally {
-
-            isFetching.current = false;
-        }
+        isFetching.current = false;
     };
+    
 
     useEffect(() => {
         fetchData();
@@ -90,21 +103,34 @@ function Watchlist() {
     }, [])
 
 
-    useEffect(() => {
-        console.log('selectedRows', selectedRows);
-    }, [selectedRows])
+    // useEffect(() => {
+    //     console.log('selectedRows', selectedRows);
+    // }, [selectedRows])
 
     const handleRowSelect = (item) => {
-        setSelectedRows((prevSelected) => {
-            const isSelected = prevSelected.some(selected => selected === item.STONE);
-            if (isSelected) {
-                // Remove the item if already selected
-                return prevSelected.filter(selected => selected !== item.STONE);
-            } else {
-                // Add the complete item if not selected
-                return [...prevSelected, item.STONE];
-            }
-        });
+        if (tabselect.single) {
+            setSelectedRows((prevSelected) => {
+                const isSelected = prevSelected.some(selected => selected === item.STONE);
+                if (isSelected) {
+                    // Remove the item if already selected
+                    return prevSelected.filter(selected => selected !== item.STONE);
+                } else {
+                    // Add the complete item if not selected
+                    return [...prevSelected, item.STONE];
+                }
+            });
+        } else {
+            setSelectedRows((prevSelected) => {
+                const isSelected = prevSelected.some(selected => selected === item.FL_SUB_LOT);
+                if (isSelected) {
+                    // Remove the item if already selected
+                    return prevSelected.filter(selected => selected !== item.FL_SUB_LOT);
+                } else {
+                    // Add the complete item if not selected
+                    return [...prevSelected, item.FL_SUB_LOT];
+                }
+            });
+        }
     };
 
     const sortfilter = (col) => {
@@ -152,26 +178,53 @@ function Watchlist() {
     };
 
     const handleaddBasket = async () => {
-        if (selectedRows.length > 0) {
-            try {
-                const response = await Axios.post('user/userbasket', {
-                    type: 'I',
-                    stone_id: selectedRows,
-                    stype: 'POLISH-SINGLE'
-                })
-                if (response.status === 200) {
-                    setToastMessage(response?.data?.status);
+        if (tabselect.single) {
+            if (selectedRows.length > 0) {
+                try {
+                    const response = await Axios.post('user/userbasket', {
+                        type: 'I',
+                        stone_id: selectedRows,
+                        stype: 'POLISH-SINGLE'
+                    })
+                    if (response.status === 200) {
+                        fetchData('single');
+                        setToastMessage(response?.data?.status);
+                        setShowToast(true);
+                        window.location.reload()
+                    }
+                } catch (error) {
+                    console.error("error to handle basket", error)
+                    setToastMessage(error.response.data)
+                    // setToastMessage('User not found.');
                     setShowToast(true);
-                    window.location.reload()
                 }
-            } catch (error) {
-                console.error("error to handle basket", error)
-                setToastMessage(error.response.data)
-                // setToastMessage('User not found.');
-                setShowToast(true);
+            } else {
+                window.alert('please select stone')
             }
         } else {
-            window.alert('please select stone')
+            if (selectedRows.length > 0) {
+                try {
+                    const response = await Axios.post('user/userbasket', {
+                        type: 'I',
+                        stone_id: selectedRows,
+                        stype: 'POLISH-PARCEL'
+                    })
+                    if (response.status === 200) {
+                        fetchData('parcel');
+                        setToastMessage(response?.data?.status);
+                        setShowToast(true);
+                        // window.location.reload()
+
+                    }
+                } catch (error) {
+                    console.error("error to handle basket", error)
+                    setToastMessage(error.response.data)
+                    // setToastMessage('User not found.');
+                    setShowToast(true);
+                }
+            } else {
+                window.alert('please select stone')
+            }
         }
     }
 
@@ -198,23 +251,52 @@ function Watchlist() {
         }
     }
 
+
+    const removeFromLocalStorage = (selectedRows) => {
+        try {
+ 
+            const storedData = JSON.parse(localStorage.getItem('watchlist')) || [];
+
+            const updatedData = storedData.filter(
+                (item) => !selectedRows.includes(item.FL_SUB_LOT)
+            );
+
+            localStorage.setItem('watchlist', JSON.stringify(updatedData));
+
+            console.log('Successfully removed selected items.');
+        } catch (error) {
+            console.error('Error removing items:', error);
+        }
+    };
+
     const handleClearWatchlist = async () => {
-        if (selectedRows?.length === data?.length) {
-            try {
-                const response = await Axios.delete('user/watchlist/clear');
-                if (response.status === 200) {
-                    setToastMessage(response?.data?.message);
+        if (tabselect.single) {
+            if (selectedRows?.length === data?.length) {
+                try {
+                    const response = await Axios.delete('user/watchlist/clear');
+                    if (response.status === 200) {
+                        setToastMessage(response?.data?.message);
+                        setShowToast(true);
+                        setSelectedRows([]);
+                        window.location.reload();
+                        fetchData()
+                    }
+                } catch (error) {
+                    console.error("Error removing from watchlist", error);
+                    setToastMessage(error.response.data);
                     setShowToast(true);
-                    setSelectedRows([]);
-                    window.location.reload();
                 }
-            } catch (error) {
-                console.error("Error removing from watchlist", error);
-                setToastMessage(error.response.data);
-                setShowToast(true);
+            } else {
+                window.alert('Please select all StoneIds to clear the watchlist');
             }
         } else {
-            window.alert('Please select all StoneIds to clear the watchlist');
+           
+            if (selectedRows?.length !== 0) {
+                removeFromLocalStorage(selectedRows);
+                fetchData('parcel')
+            } else {
+                window.alert('Please select StoneIds to clear the watchlist');
+            }
         }
     };
 
@@ -226,6 +308,31 @@ function Watchlist() {
             <IonContent color="primary" style={{ paddingBottom: '80x', marginBottom: '100px', marginTop: '10px' }}>
                 <div style={{ marginTop: '20px' }}>
                     <h5 class="text-center mb-5 element">Watch List</h5>
+                </div>
+                <div style={{ display: 'flex', gap: '10px', margin:'10px 0px 15px 15px' }}>
+                    <button
+                        className={tabselect.single ? 'sumbutton' : 'sumbutton sumbutton-11'}
+                        onClick={() => {
+                            settabselect(prev => ({
+                                ...prev,
+                                single: true,
+                                parcel: false
+                            }))
+                            fetchData('single');
+                            setSelectedRows([]);
+                        }}>SINGLE</button>
+                    <button
+                        className={tabselect.parcel ? 'sumbutton' : 'sumbutton sumbutton-11'}
+                        onClick={() => {
+                            settabselect((prev) => ({
+                                ...prev,
+                                single: false,
+                                parcel: true
+                            }))
+                            fetchData('parcel');
+                            setSelectedRows([]);
+                        }}
+                    >PARCEL</button>
                 </div>
                 <div className='myquotations' style={{ marginBottom: '90px' }}>
                     <IonGrid>
@@ -292,118 +399,194 @@ function Watchlist() {
                                         </IonCol>
                                     </IonRow>
                                 </div>
-                                <div className='table-responsive pt-10'>
-                                    <table striped bordered hover style={{ width: 'max-content', color: 'black' }} >
-                                        <thead className="tablecss" >
-                                            <tr>
-                                                <th>
-                                                    <label className="checkbox style-a">
-                                                        <input type="checkbox"
-                                                            onChange={() => {
-                                                                if (selectedRows?.length === data?.length) {
-                                                                    setSelectedRows([]);
-                                                                } else {
-                                                                    setSelectedRows(data?.map(item => item.STONE));
-                                                                }
-                                                            }}
-                                                            checked={selectedRows?.length === data?.length}
-                                                        />
-                                                        <div className="checkbox__checkmark"></div>
-                                                    </label>
-                                                </th>
-                                                {/* <th>SrNo</th> */}
-                                                <th>Status</th>
-                                                <th>StoneId</th>
-                                                <th onClick={() => handleSort("LAB")}> Lab {sortBy === "LAB" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
-                                                <th>Report No</th>
-                                                <th onClick={() => handleSort("SHAPE")}>
-                                                    Shape {sortBy === "SHAPE" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}
-                                                </th>
-                                                <th onClick={() => handleSort("CARATS")}>
-                                                    Carats {sortBy === "CARATS" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
-                                                <th onClick={() => handleSort("COLOR")}>
-                                                    Color {sortBy === "COLOR" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
-                                                <th onClick={() => handleSort("CLARITY")}>
-                                                    Clarity {sortBy === "CLARITY" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
-                                                <th onClick={() => handleSort("CUT")}>
-                                                    Cut{sortBy === "CUT" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
-                                                <th onClick={() => handleSort("POLISH")}>
-                                                    Polish{sortBy === "POLISH" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
-                                                <th onClick={() => handleSort("SYMM")}>
-                                                    Symm{sortBy === "SYMM" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
-                                                <th>Measurements</th>
-                                                <th>Table %</th>
-                                                <th>Depth %</th>
-                                                <th>Ratio</th>
-                                                <th>H&A</th>
-                                                <th>RapPrice</th>
-                                                <th>Discount %</th>
-                                                <th>Price/Cts</th>
-                                                <th>Amount</th>
-                                                <th>Certificate</th>
-                                                <th>VideoLink</th>
-                                                <th>Created By</th>
+                                {
+                                    tabselect?.single ? <>
+                                        <div className='table-responsive pt-10'>
+                                            <table striped bordered hover style={{ width: 'max-content', color: 'black' }} >
+                                                <thead className="tablecss" >
+                                                    <tr>
+                                                        <th>
+                                                            <label className="checkbox style-a">
+                                                                <input type="checkbox"
+                                                                    onChange={() => {
+                                                                        if (selectedRows?.length === data?.length) {
+                                                                            setSelectedRows([]);
+                                                                        } else {
+                                                                            setSelectedRows(data?.map(item => item.STONE));
+                                                                        }
+                                                                    }}
+                                                                    checked={selectedRows?.length === data?.length}
+                                                                />
+                                                                <div className="checkbox__checkmark"></div>
+                                                            </label>
+                                                        </th>
+                                                        {/* <th>SrNo</th> */}
+                                                        <th>Status</th>
+                                                        <th>StoneId</th>
+                                                        <th onClick={() => handleSort("LAB")}> Lab {sortBy === "LAB" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
+                                                        <th>Report No</th>
+                                                        <th onClick={() => handleSort("SHAPE")}>
+                                                            Shape {sortBy === "SHAPE" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}
+                                                        </th>
+                                                        <th onClick={() => handleSort("CARATS")}>
+                                                            Carats {sortBy === "CARATS" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
+                                                        <th onClick={() => handleSort("COLOR")}>
+                                                            Color {sortBy === "COLOR" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
+                                                        <th onClick={() => handleSort("CLARITY")}>
+                                                            Clarity {sortBy === "CLARITY" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
+                                                        <th onClick={() => handleSort("CUT")}>
+                                                            Cut{sortBy === "CUT" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
+                                                        <th onClick={() => handleSort("POLISH")}>
+                                                            Polish{sortBy === "POLISH" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
+                                                        <th onClick={() => handleSort("SYMM")}>
+                                                            Symm{sortBy === "SYMM" ? (sortOrder === "asc" ? ' ▲' : ' ▼') : '▼'}</th>
+                                                        <th>Measurements</th>
+                                                        <th>Table %</th>
+                                                        <th>Depth %</th>
+                                                        <th>Ratio</th>
+                                                        <th>H&A</th>
+                                                        <th>RapPrice</th>
+                                                        <th>Discount %</th>
+                                                        <th>Price/Cts</th>
+                                                        <th>Amount</th>
+                                                        <th>Certificate</th>
+                                                        <th>VideoLink</th>
+                                                        <th>Created By</th>
 
-                                            </tr>
-                                        </thead>
-                                        <tbody className="tablecss">
-                                            {currentRows?.map((item, index) => (
-                                                <tr key={index}>
-                                                    <td>
-                                                        <label className="checkbox style-a">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={selectedRows?.some(selected => selected === item.STONE)}
-                                                                onChange={() => handleRowSelect(item)}
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="tablecss">
+                                                    {currentRows?.map((item, index) => (
+                                                        <tr key={index}>
+                                                            <td>
+                                                                <label className="checkbox style-a">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={selectedRows?.some(selected => selected === item.STONE)}
+                                                                        onChange={() => handleRowSelect(item)}
 
-                                                            />
-                                                            <div className="checkbox__checkmark"></div>
-                                                        </label>
-                                                    </td>
-                                                    {/* <td>{item.srNo}</td> */}
-                                                    <td>{item.STATUS}</td>
-                                                    <td>{item.STONE}</td>
-                                                    <td><a style={{ color: 'blue' }} href={`https://www.igi.org/reports/verify-your-report?r=${item.REPORTNO}`} target="_blank">{item.LAB}</a></td>
-                                                    <td>{item.REPORTNO}</td>
-                                                    <td>{item.SHAPE}</td>
-                                                    <td>{item.CARATS}</td>
-                                                    <td>{item.COLOR}</td>
-                                                    <td>{item.CLARITY}</td>
-                                                    <td>{item.CUT}</td>
-                                                    <td>{item.POLISH}</td>
-                                                    <td>{item.SYMM}</td>
-                                                    <td>{item.FL_MEASUREMENTS}</td>
-                                                    <td>{item.FL_TABLE_PER?.toFixed(2)}</td>
-                                                    <td>{item.FL_DEPTH_PER?.toFixed(2)}</td>
-                                                    <td>{item.FL_RATIO || '-'}</td>
-                                                    <td>{item.ha}</td>
-                                                    <td>{item.RAP_PRICE?.toFixed(2)}</td>
-                                                    <td>{item.ASK_DISC}</td>
-                                                    <td>{(item.RAP_PRICE * (100 - Number(item.ASK_DISC)) / 100).toFixed(2)}</td>
-                                                    <td>{((item.RAP_PRICE * (100 - Number(item.ASK_DISC)) / 100) * item.CARATS)?.toFixed(2)}</td>
-                                                    <td><a href={`https://www.igi.org/reports/verify-your-report?r=${item.REPORTNO}`} target="_blank" style={{ color: 'blue' }}>PDF</a></td>
-                                                    <td><a href={`https://www.dnav360.com/vision/dna.html?d=${item.STONE}&ic=1`} target="_blank" style={{ color: 'blue' }}>VIDEO</a></td>
-                                                    <td>{clientName}</td>
-                                                    {/* <td>{item.companyName}</td> */}
-                                                </tr>
-                                            ))}
-                                            <tr className="tablecss">
-                                                <th></th>
-                                                <th colSpan={5}>Total</th>
-                                                <th>{totals.CARATS?.toFixed(2)}</th>
-                                                <th colSpan={10}></th>
-                                                <th></th>
-                                                <th>{totals.ASK_DISC?.toFixed(2)}</th>
-                                                <th>{totals.pricects?.toFixed(2)}</th>
-                                                <th>{totals.amount?.toFixed(2)}</th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                {/* <th></th> */}
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                                                    />
+                                                                    <div className="checkbox__checkmark"></div>
+                                                                </label>
+                                                            </td>
+                                                            {/* <td>{item.srNo}</td> */}
+                                                            <td>{item.STATUS}</td>
+                                                            <td>{item.STONE}</td>
+                                                            <td><a style={{ color: 'blue' }} href={`https://www.igi.org/reports/verify-your-report?r=${item.REPORTNO}`} target="_blank">{item.LAB}</a></td>
+                                                            <td>{item.REPORTNO}</td>
+                                                            <td>{item.SHAPE}</td>
+                                                            <td>{item.CARATS}</td>
+                                                            <td>{item.COLOR}</td>
+                                                            <td>{item.CLARITY}</td>
+                                                            <td>{item.CUT}</td>
+                                                            <td>{item.POLISH}</td>
+                                                            <td>{item.SYMM}</td>
+                                                            <td>{item.FL_MEASUREMENTS}</td>
+                                                            <td>{item.FL_TABLE_PER?.toFixed(2)}</td>
+                                                            <td>{item.FL_DEPTH_PER?.toFixed(2)}</td>
+                                                            <td>{item.FL_RATIO || '-'}</td>
+                                                            <td>{item.ha}</td>
+                                                            <td>{item.RAP_PRICE?.toFixed(2)}</td>
+                                                            <td>{item.ASK_DISC}</td>
+                                                            <td>{(item.RAP_PRICE * (100 - Number(item.ASK_DISC)) / 100).toFixed(2)}</td>
+                                                            <td>{((item.RAP_PRICE * (100 - Number(item.ASK_DISC)) / 100) * item.CARATS)?.toFixed(2)}</td>
+                                                            <td><a href={`https://www.igi.org/reports/verify-your-report?r=${item.REPORTNO}`} target="_blank" style={{ color: 'blue' }}>PDF</a></td>
+                                                            <td><a href={`https://www.dnav360.com/vision/dna.html?d=${item.STONE}&ic=1`} target="_blank" style={{ color: 'blue' }}>VIDEO</a></td>
+                                                            <td>{clientName}</td>
+                                                            {/* <td>{item.companyName}</td> */}
+                                                        </tr>
+                                                    ))}
+                                                    <tr className="tablecss">
+                                                        <th></th>
+                                                        <th colSpan={5}>Total</th>
+                                                        <th>{totals.CARATS?.toFixed(2)}</th>
+                                                        <th colSpan={10}></th>
+                                                        <th></th>
+                                                        <th>{totals.ASK_DISC?.toFixed(2)}</th>
+                                                        <th>{totals.pricects?.toFixed(2)}</th>
+                                                        <th>{totals.amount?.toFixed(2)}</th>
+                                                        <th></th>
+                                                        <th></th>
+                                                        <th></th>
+                                                        {/* <th></th> */}
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </> : <>
+                                    <div className='table-responsive pt-10'>
+                                            <table striped bordered hover style={{ width: 'max-content', color: 'black' }} >
+                                                <thead className="tablecss" >
+                                                    <tr>
+                                                            <th>
+                                                            <label className="checkbox style-a">
+                                                                <input type="checkbox"
+                                                                    onChange={() => {
+                                                                        if (selectedRows?.length === data?.length) {
+                                                                            setSelectedRows([]);
+                                                                        } else {
+                                                                            setSelectedRows(data?.map(item => item.FL_SUB_LOT));
+                                                                        }
+                                                                    }}
+                                                                    checked={selectedRows?.length === data?.length}
+                                                                />
+                                                                <div className="checkbox__checkmark"></div>
+                                                            </label>
+                                                        </th>
+                                                        {/* <th>SrNo</th> */}
+                                                        <th>Type</th>
+                                                    <th>Location</th>
+                                                    <th>In Stock</th>
+                                                    <th>LOT NO</th>
+                                                    <th>Carats</th>
+                                                    <th>Clarity</th>
+                                                    <th>CO ID</th>
+                                                    <th>Color</th>
+                                                    <th>Height</th>
+                                                    <th>Length</th>
+                                                    <th>Main_LOT</th>
+                                                    <th>Shape</th>
+                                                    <th>MM Size</th>
+                                                    <th>Width</th>
+
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="tablecss">
+                                                    {currentRows?.map((item, index) => (
+                                                        <tr key={index}>
+                                                            <td>
+                                                                <label className="checkbox style-a">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={selectedRows?.some(selected => selected === item.FL_SUB_LOT)}
+                                                                        onChange={() => handleRowSelect(item)}
+
+                                                                    />
+                                                                    <div className="checkbox__checkmark"></div>
+                                                                </label>
+                                                            </td>
+                                                            <td>{item.FL_TYPE}</td>
+                                                        <td>{item.FL_BRID}</td>
+                                                        <td>A</td>
+                                                        <td>{item.FL_SUB_LOT}</td>
+                                                        <td>{item.FL_CARATS}</td>
+                                                        <td>{item.FL_CLARITY}</td>
+                                                        <td>{item.FL_COID}</td>
+                                                        <td>{item.FL_COLOR}</td>
+                                                        <td>{item.FL_HIGHT}</td>
+                                                        <td>{item.FL_LENGTH}</td>
+                                                        <td>{item.FL_MAIN_LOT}</td>
+                                                        <td>{item.FL_SHAPE_NAME}</td>
+                                                        <td>{item.FL_SIZE}</td>
+                                                        <td>{item.FL_WIDTH}</td>
+                                                        </tr>
+                                                    ))}
+                                       
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </>
+                                }
                             </IonCol>
                         </IonRow>
                     </IonGrid>

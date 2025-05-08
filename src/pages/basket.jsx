@@ -58,23 +58,100 @@ function Basket() {
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-
+    const [tabselect, settabselect] = useState({
+        single: true,
+        parcel: false
+    });
     // useEffect(() => {
     //     console.log('selectedRows', selectedRows)
     // }, [selectedRows])
 
     const handleRowSelect = (item) => {
-        setSelectedRows((prevSelected) => {
-            const isSelected = prevSelected.some(selected => selected.STONE === item.STONE);
-            if (isSelected) {
-                // Remove the item if already selected
-                return prevSelected.filter(selected => selected.STONE !== item.STONE);
-            } else {
-                // Add the complete item if not selected
-                return [...prevSelected, item];
-            }
-        });
+        if (tabselect.single) {
+            setSelectedRows((prevSelected) => {
+                const isSelected = prevSelected.some(selected => selected.STONE === item.STONE);
+                if (isSelected) {
+                    // Remove the item if already selected
+                    return prevSelected.filter(selected => selected.STONE !== item.STONE);
+                } else {
+                    // Add the complete item if not selected
+                    return [...prevSelected, item];
+                }
+            });
+        } else {
+            setSelectedRows((prevSelected) => {
+                const isSelected = prevSelected.some(selected => selected.FL_SUB_LOT === item.FL_SUB_LOT);
+                if (isSelected) {
+                    // Remove the item if already selected
+                    return prevSelected.filter(selected => selected.FL_SUB_LOT !== item.FL_SUB_LOT);
+                } else {
+                    // Add the complete item if not selected
+                    return [...prevSelected, item];
+                }
+            });
+        }
     };
+
+    const transformData = (data) => {
+        const csvData = data?.map((item) => ({
+            'LOT NO': item.FL_SUB_LOT,
+            Type: item.FL_INVENTORY_TYPE,
+            Carats: item.FL_CARATS,
+            Clarity: item.FL_CLARITY,
+            Color: item.FL_COLOR,
+            'Co ID': item.FL_COID,
+            // Height: item.FL_HIGHT,
+            // Length: item.FL_LENGTH,
+            Main_LOT: item.FL_MAIN_LOT,
+            Shape: item.FL_SHAPE_GROUP,
+            // 'MM Size': item.FL_SIZE,
+            // 'Width': item.FL_WIDTH,
+            'Location': item.FL_BRID
+        }));
+
+        return csvData;
+    };
+
+    const convertToCSV = (data) => {
+        if (!Array.isArray(data) || data.length === 0) return '';
+
+        // Extract headers (keys of the first object)
+        const headers = Object.keys(data[0]);
+
+        // Convert each row to a CSV line
+        const rows = data.map((row) =>
+            headers.map((header) => `"${row[header] ?? ''}"`).join(',')
+        );
+
+        // Combine headers and rows
+        return [headers.join(','), ...rows].join('\n');
+    };
+
+    // Function to trigger CSV download
+    const downloadCSV = (csvData, fileName = 'data.csv') => {
+        const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', fileName);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handledownload = () => {
+        if (selectedRows.length === 0) {
+            window.alert('Please select stones to export.');
+            return;
+        }
+        const transformedData = transformData((selectedRows));
+        const csvData = convertToCSV(transformedData);
+        downloadCSV(csvData, 'diamond_data.csv');
+        console.log(transformedData);
+    }
+
 
     const sortfilter = (col) => {
         const sortedValue = [...data].sort((a, b) => {
@@ -110,28 +187,46 @@ function Basket() {
         }
     }, [])
 
-    const fetchData = async () => {
-        if (isFetching.current) return;
-        isFetching.current = true;
-        try {
-            const response = await Axios.post('user/userbasket', {
-                type: 'S',
-                stype: 'single'
-            });
-
-            if (response.status === 200) {
-                setData(response?.data?.data); // Update state only if the component is still mounted
-                setcount(response.data.count);
+    const fetchData = async (single) => {
+        if (isFetching.current) return;    
+        isFetching.current = true; 
+    
+        if (single === 'parcel') {
+    
+            try {
+                const response = await Axios.post('user/userbasket', {
+                    type: 'S',
+                    stype: 'parcel'
+                });
+    
+                if (response.status === 200) {
+                    setcount(response.data.count);
+                    setData(response?.data?.data);                
+                }
             }
-        }
-        catch (err) {
-            console.log("Failed to fetch data. Please try again."); // Set error state
-        }
-        finally {
-
-            isFetching.current = false;
-        }
+            catch (err) {
+                console.log("Failed to fetch data. Please try again."); 
+            }
+        } else {
+        
+            try {
+                const response = await Axios.post('user/userbasket', {
+                    type: 'S',
+                    stype: 'single'
+                });
+    
+                if (response.status === 200) {
+                    setcount(response.data.count);
+                    setData(response?.data?.data); 
+                }
+            }
+            catch (err) {
+                console.log("Failed to fetch data. Please try again."); 
+            }
+        }    
+        isFetching.current = false; 
     };
+    
 
     useEffect(() => {
         fetchData();
@@ -166,6 +261,7 @@ function Basket() {
     };
 
     const handleremovebasket = async () => {
+        if (tabselect.single) {
         try {
             const response = await Axios.post('user/userbasket', {
                 type: 'D',
@@ -176,7 +272,7 @@ function Basket() {
                 // window.alert('Remove from basket successfully');
                 setToastMessage(response?.data?.status);
                 setShowToast(true);
-                fetchData()
+                fetchData('single')
             }
         } catch (error) {
             console.log('error while removing basket', error)
@@ -185,35 +281,59 @@ function Basket() {
             setShowToast(true);
         }
     }
+    else{
+        try {
+            const response = await Axios.post('user/userbasket', {
+                type: 'D',
+                stype: 'parcel',
+                stone_id: selectedRows.map(row => row.STONE),
+            })
+            if (response.status === 200) {
+                // window.alert('Remove from basket successfully');
+                setToastMessage(response?.data?.status);
+                setShowToast(true);
+                fetchData('parcel')
+            }
+        } catch (error) {
+            console.log('error while removing basket', error)
+            setToastMessage(error.response.data)
+            // setToastMessage('User not found.');
+            setShowToast(true);
+        }
+    }
+    }
 
 
     const handleExportSelectedToExcel = async () => {
-        
+        setIsLoading(true);
+    
         if (selectedRows.length === 0) {
             window.alert('Please select stones to export.');
+            setIsLoading(false); 
             return;
         }
-
-        try {
-            setIsLoading(true);
-            // console.log('selectedRows', selectedRows)
-            const payload = {
-                stoneCert: selectedRows?.map(row => row.STONE).join(' '),
+    
+        if(tabselect.single){
+            try {
+                const payload = {
+                    stoneCert: selectedRows?.map(row => row.STONE).join(' '),
+                }
+                const response = await Axios.post('/search/stoneUser?type=excel', payload);
+        
+                if (response.data.status === 'success') {
+                    // window.open(`${baseURL}exports/${response.data.fileName}`)
+                }
+            } catch (error) {
+                console.log(error);
+            } finally {
+                setIsLoading(false);
             }
-            const response = await Axios.post('/search/stoneUser?type=excel', payload);
-
-            if (response.data.status === 'success') {
-                window.open(`${baseURL}exports/${response.data.fileName}`)
-            }
-
-
-        } catch (error) {
-            console.log(error)
+        } else {
+            handledownload();
+            setIsLoading(false);
         }
-        finally {
-            setIsLoading(false); // Set loading to false after search completes or fails
-          }
     }
+    
 
     return (
         <>
@@ -221,6 +341,31 @@ function Basket() {
             <IonContent color="primary" style={{ paddingBottom: '80x', marginBottom: '100px', marginTop: '10px' }}>
                 <div style={{ marginTop: '20px' }}>
                     <h5 class="text-center mb-5 element">Basket</h5>
+                </div>
+                <div style={{ display: 'flex', gap: '10px', margin:'10px 0px 15px 15px' }}>
+                    <button
+                        className={tabselect.single ? 'sumbutton' : 'sumbutton sumbutton-11'}
+                        onClick={() => {
+                            settabselect(prev => ({
+                                ...prev,
+                                single: true,
+                                parcel: false
+                            }))
+                            fetchData('single');
+                            setSelectedRows([]);
+                        }}>SINGLE</button>
+                    <button
+                        className={tabselect.parcel ? 'sumbutton' : 'sumbutton sumbutton-11'}
+                        onClick={() => {
+                            settabselect((prev) => ({
+                                ...prev,
+                                single: false,
+                                parcel: true
+                            }))
+                            fetchData('parcel');
+                            setSelectedRows([]);
+                        }}
+                    >PARCEL</button>
                 </div>
                 <div className='myquotations'>
                     <IonGrid style={{marginBottom:'90px'}}>
@@ -242,7 +387,9 @@ function Basket() {
                                     <span>Client Name:</span>
                                     <div style={{ marginLeft: "8px", display: "block", color: "#4c3226" }}>{clientName}</div>
                                 </div>
-                                <ul className="tabletopcss">
+                                { 
+                                 tabselect.single &&  <ul className="tabletopcss">
+                               
                                     <li>Total Pcs = <span>{selectedtotals?.pcs}</span></li>
                                     <li>Cts = <span>{selectedtotals?.CARATS?.toFixed(2)}</span></li>
                                     <li>Rap = <span>{selectedtotals?.RAP?.toFixed(2)}</span></li>
@@ -250,8 +397,10 @@ function Basket() {
                                     <li>Price = <span>{selectedtotals?.pricects?.toFixed(2)}</span></li>
                                     <li>Amt $ = <span>{selectedtotals?.amount?.toFixed(2)}</span></li>
                                 </ul>
+                            }
 
-
+                                {
+                                    tabselect?.single ? <>
                                 <div className='table-responsive pt-10'>
                                     <table striped bordered hover style={{ width: 'max-content', color: 'black' }} >
                                         <thead className="tablecss" >
@@ -370,6 +519,79 @@ function Basket() {
                                         </tbody>
                                     </table>
                                 </div>
+                                </> : <>
+                                <div className='table-responsive pt-10'>
+                                            <table striped bordered hover style={{ width: 'max-content', color: 'black' }} >
+                                                <thead className="tablecss" >
+                                                    <tr>
+                                                        <th>
+                                                            <label className="checkbox style-a">
+                                                                <input type="checkbox"
+                                                                    onChange={() => {
+                                                                        if (selectedRows?.length === data?.length) {
+                                                                            setSelectedRows([]);
+                                                                        } else {
+                                                                            setSelectedRows(data?.map(item => item));
+                                                                        }
+                                                                    }}
+                                                                    checked={selectedRows?.length === data?.length}
+                                                                />
+                                                                <div className="checkbox__checkmark"></div>
+                                                            </label>
+                                                        </th>
+                                                        {/* <th>SrNo</th> */}
+                                                        <th>Type</th>
+                                                    <th>Location</th>
+                                                    <th>In Stock</th>
+                                                    <th>LOT NO</th>
+                                                    <th>Carats</th>
+                                                    <th>Clarity</th>
+                                                    <th>CO ID</th>
+                                                    <th>Color</th>
+                                                    {/* <th>Height</th> */}
+                                                    {/* <th>Length</th> */}
+                                                    <th>Main_LOT</th>
+                                                    <th>Shape</th>
+                                                    {/* <th>MM Size</th> */}
+                                                    {/* <th>Width</th> */}
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="tablecss">
+                                                {data?.map((item, index) => (
+                                                    <tr key={index}>
+                                                        <td>
+                                                            <label className="checkbox style-a">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={selectedRows?.some(selected => selected.FL_SUB_LOT === item.FL_SUB_LOT)}
+                                                                    onChange={() => handleRowSelect(item)}
+
+                                                                />
+                                                                <div className="checkbox__checkmark"></div>
+                                                            </label>
+                                                        </td>
+                                                        {/* <td>{item.srNo}</td> */}
+                                                        <td>{item.FL_INVENTORY_TYPE}</td>
+                                                        <td>{item.FL_BRID}</td>
+                                                        <td>A</td>
+                                                        <td>{item.FL_SUB_LOT}</td>
+                                                        <td>{item.FL_CARATS}</td>
+                                                        <td>{item.FL_CLARITY}</td>
+                                                        <td>{item.FL_COID}</td>
+                                                        <td>{item.FL_COLOR}</td>
+                                                        {/* <td>{item.FL_HIGHT}</td> */}
+                                                        {/* <td>{item.FL_LENGTH}</td> */}
+                                                        <td>{item.FL_MAIN_LOT}</td>
+                                                        <td>{item.FL_SHAPE_GROUP}</td>
+                                                        {/* <td>{item.FL_SIZE}</td> */}
+                                                        {/* <td>{item.FL_WIDTH}</td> */}
+                                                    </tr>
+                                                ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                </>
+}
                             </IonCol>
                         </IonRow>
                     </IonGrid>
