@@ -45,6 +45,18 @@ Axios.interceptors.request.use(
   }
 );
 
+Axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 403) {
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
 
 export const setAuthToken = (data, isRememberMe) => {
   console.log(data);

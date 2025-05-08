@@ -331,7 +331,7 @@ const Home = () => {
           pathname: `/tableshow`,
           state: { searchResult: response.data.result, selectedOptions: selectedOptions }
         });
-        window.location.reload()
+        // window.location.reload()
       } else {
         setError(data.message);
         setToastMessage(err.response.data.message)
@@ -348,12 +348,12 @@ const Home = () => {
 
 
   return (
-    <IonPage>
+    <>
+      <IonContent>
       <IonHeader>
         <Header />
       </IonHeader>
-      <IonContent>
-        <IonGrid style={{ marginBottom: "20px" }}>
+        <IonGrid style={{ marginBottom: "20px", position: 'relative' ,zIndex:"0" }}>
           <div style={{ marginTop: '20px' }}>
             <h5 class="text-center mb-5 element">DashBoard</h5>
           </div>
@@ -361,12 +361,14 @@ const Home = () => {
             <IonCol size="12">
               <div className="main-box main2">
                 <div className="checkbox-group">
-                  {categories.Shape.map((option) => (
-                    <span key={option.name}
-                      className={`checkbox-label ${selectedOptions.SHAPES?.includes(option.name.toUpperCase()) ? 'selected' : ''}`}
-                      onClick={() => handleCheckboxChange("SHAPES", option.name.toUpperCase())}>
+                  {categories?.Shape?.map((option) => (
+                    <span key={option?.name}
+                      className={`checkbox-label ${selectedOptions?.SHAPES?.includes(option?.name?.toUpperCase()) ? 'selected' : ''}`}
+                      onClick={() => handleCheckboxChange("SHAPES", option?.name?.toUpperCase())}>
                       {option.name}
-                      <i className={option.shapeicon}></i>
+                      <i className={option?.shapeicon}></i>
+                      {/* <i style={{fontSize:'10px'}}>{option?.shapeicon}</i> */}
+
                     </span>
                   ))}
 
@@ -424,7 +426,6 @@ const Home = () => {
               </div>
             </IonCol>
           </IonRow>
-          {/* Stone ID Input */}
 
           <IonRow>
             <IonCol size="12">
@@ -816,7 +817,7 @@ const Home = () => {
           </div>
         )}
       </IonContent>
-    </IonPage>
+    </>
   );
 };
 

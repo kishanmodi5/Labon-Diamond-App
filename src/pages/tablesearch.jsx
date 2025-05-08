@@ -300,8 +300,11 @@ function Tablesearch() {
 
     return (
         <>
-            <Header />
+            {/* <Header /> */}
             <IonContent color="primary" style={{ paddingBottom: '80x', marginBottom: '100px', marginTop: '10px', }}>
+            <IonHeader>
+        <Header />
+      </IonHeader>
                 <div style={{ marginTop: '20px' }}>
                     <h5 class="text-center mb-5 element">Table Search</h5>
                 </div>

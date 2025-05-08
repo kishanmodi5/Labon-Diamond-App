@@ -37,6 +37,12 @@ function Login() {
     const history = useHistory();
     const [showPassword, setShowPassword] = useState(false);
 
+    // useEffect(()=>{
+    //     if(localStorage.getItem('token')){
+    //         history.push('/home')
+    //     }
+    // },)
+
     const togglePasswordVisibility = () => {
         setShowPassword((prevState) => !prevState);
     };
@@ -70,7 +76,7 @@ function Login() {
             }
             setToastMessage(response?.data?.status);
             setShowToast(true);
-            history.push("/home");
+            // history.push("/home");
             window.location.href = '/home';
         } catch (err) {
             setError('An error occurred. Please try again.', err)
@@ -87,7 +93,7 @@ function Login() {
         <>
             <IonPage style={{ background: '#ffffff' }}>
                 <div className='main-bg' style={{ width: '100%', height: '100%' }}>
-                    <div style={{ width: '100%', height: '30px', background: '#4c3226', position: 'absolute', left: ' 0', top: '0' }}></div>
+                    <div style={{ width: '100%', height: '50px', background: '#4c3226', position: 'absolute', left: ' 0', top: '0' }}></div>
                     <img
                         className='freemlogin1'
                         src="img/freemlogin.png"
@@ -131,7 +137,7 @@ function Login() {
                                                 </svg>
                                             </button>
                                             <input
-                                                style={{ background: '#ffdeb300', color: '#000', width: '100%', border:'1px solid #4c3226ab', marginBottom: '12px', padding: '8px' }}
+                                                style={{ background: '#ffdeb300', color: '#000', width: '100%', border:'1px solid #4c3226ab', marginBottom: '12px', padding: '8px',borderRadius:"0" }}
                                                 type="text"
                                                 class="form-control"
                                                 name="username"
@@ -165,7 +171,7 @@ function Login() {
                                                 </>}
                                             </button>
                                             <input
-                                                style={{ background: '#ffdeb300', color: '#000', width: '100%',  padding: '8px',border:'1px solid #4c3226ab' }}
+                                                style={{ background: '#ffdeb300', color: '#000', width: '100%',  padding: '8px',border:'1px solid #4c3226ab', borderRadius:"0" }}
                                                 type={showPassword ? "text" : "password"}
                                                 name="password"
                                                 placeholder="Enter your Password *"
@@ -177,7 +183,7 @@ function Login() {
                                         </div>
                                         <IonCol size='12'>
                                             <IonRow>
-                                                <IonCol size='6' style={{ display: 'flex' }}>
+                                                <IonCol size='6' style={{ display: 'flex',alignItems:"center" }}>
                                                     <input
                                                         style={{ width: '16px', marginTop: '-2px' }}
                                                         type="checkbox"
@@ -197,15 +203,15 @@ function Login() {
                                                     </IonCol> */}
                                             </IonRow>
                                         </IonCol>
-                                        <IonButton
+                                        <button
                                             color='secondary'
                                             type='submit'
                                             expand="full"
-                                            style={{ marginTop: '10px', width: '100%', textTransform: 'uppercase' }}
+                                            style={{ marginTop: '10px', width: '100%', textTransform: 'uppercase', padding:'15px', background:'#4c3226',color:'#fff',fontSize:"14px" }}
                                             disabled={loading}
                                         >
                                             {loading ? 'Logging in...' : 'Login'}
-                                        </IonButton>
+                                        </button>
                                     </form>
                                 </div>
                                 <div style={{ justifyContent: 'center', display: 'flex', marginTop: '10px' }}>

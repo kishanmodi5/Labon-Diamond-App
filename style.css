@@ -696,7 +696,7 @@ ion-radio.yellow {
     margin: auto;
 }
 
-ion-button.addticaed {
+.addticaed {
     --background: #f3a41c;
 }
 
@@ -1019,8 +1019,8 @@ only screen and (min-width: 1280px) */
 
 @font-face {
     font-family: "diamond-shape";
-    src: url("../labondimoand/public/img/diamond-shape.woff");
-    src: url("../labondimoand/public/img/diamond-shape.woff") format("embedded-opentype"), url("../labondimoand/public/img/diamond-shape.woff") format("woff"), url("../labondimoand/public/img/diamond-shape.woff") format("truetype"), url("../labondimoand/public/img/diamond-shape.woff") format("svg");
+    src: url("/img/diamond-shape.woff");
+    src: url("/img/diamond-shape.woff") format("embedded-opentype"), url("/img/diamond-shape.woff") format("woff"), url("/img/diamond-shape.woff") format("truetype"), url("/img/diamond-shape.woff") format("svg");
     font-weight: normal;
     font-style: normal;
 }

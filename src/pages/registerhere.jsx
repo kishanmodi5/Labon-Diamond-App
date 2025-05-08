@@ -314,9 +314,9 @@ function Register() {
 
     return (
         <>
-            <IonPage style={{ background: '#fff6ec' }}>
+            <IonPage style={{ background: '#fff', paddingBottom:"25px" }}>
                 <div className='main-bg' style={{ width: '100%', height: '100%', overflow: 'auto' }}>
-                    <div style={{ width: '100%', height: '30px', background: '#4c3226', position: 'absolute', left: ' 0', top: '0', zIndex: '999' }}></div>
+                    
 
 
                     <IonGrid>
@@ -332,7 +332,7 @@ function Register() {
                                         </div>
                                     )}
                                     <form className='form-details' style={{ marginTop: '20px' }} color='secondary' onSubmit={handleSubmit}>
-                                        <div tyle={{ display: 'flex' }}>
+                                        <div style={{ display: 'flex' }}>
                                             <input
                                                 style={{ background: '#ffdeb300', color: '#000', width: '100%', border: 'none', borderBottom: '1px solid rgba(76, 50, 38, 0.67)',border: '1px solid white', marginBottom: '15px', padding: '8px' }}
                                                 type="text"
@@ -383,7 +383,7 @@ function Register() {
                                         <div style={{ display: 'flex' }}>
                                             <div className="input-box main-selct" style={{ width: '100%' }}>
                                                 <select
-                                                    style={{ background: '#ffdeb300', color: '#000', width: '100%', padding: '8px', margin: '8px 0px', borderRadius: '7px', border:'1px solid #4c32269e' }}
+                                                    style={{ background: '#ffdeb300', color: '#000', width: '100%', padding: '8px', margin: '8px 0px', borderRadius: '0px', border:'1px solid #4c32269e' ,borderBottom: '1px solid rgba(76, 50, 38, 0.67)',border: '1px solid white' }}
                                                     name="country"
                                                     value={formData.country}
                                                     onChange={handleCountryChange}
@@ -401,7 +401,7 @@ function Register() {
                                         <div style={{ display: 'flex' }}>
                                             <div className="input-box main-selct" style={{ width: '100%' }}>
                                                 <select
-                                                    style={{ background: '#ffdeb300', color: '#000', width: '100%', padding: '8px', margin: '8px 0px', borderRadius: '7px',border:'1px solid #4c32269e' }}
+                                                    style={{ background: '#ffdeb300', color: '#000', width: '100%', padding: '8px', margin: '8px 0px', borderRadius: '0px', border:'1px solid #4c32269e' ,borderBottom: '1px solid rgba(76, 50, 38, 0.67)',border: '1px solid white' }}
                                                     name="state"
                                                     value={formData.state}
                                                     onChange={handleStateChange}
@@ -420,7 +420,7 @@ function Register() {
                                         <div style={{ display: 'flex' }}>
                                             <div className="input-box main-selct" style={{ width: '100%' }}>
                                                 <select
-                                                    style={{ background: '#ffdeb300', color: '#000', width: '100%', padding: '8px', margin: '8px 0px', borderRadius: '7px',border:'1px solid #4c32269e' }}
+                                                    style={{ background: '#ffdeb300', color: '#000', width: '100%', padding: '8px', margin: '8px 0px', borderRadius: '0px', border:'1px solid #4c32269e' ,borderBottom: '1px solid rgba(76, 50, 38, 0.67)',border: '1px solid white' }}
                                                     name="city"
                                                     value={formData.city}
                                                     onChange={handleCityChange}
@@ -497,7 +497,7 @@ function Register() {
                                         <div style={{ display: 'flex' }}>
                                             <div className="input-box main-selct">
                                                 <select
-                                                    style={{ background: '#ffdeb300', color: '#000', width: '100%', padding: '8px', margin: '10px 0px 18px 0px', borderRadius: '7px', border:'1px solid #4c32269e' }}
+                                                    style={{ background: '#ffdeb300', color: '#000', width: '100%', padding: '8px', margin: '10px 0px 18px 0px', borderRadius: '0px', border:'1px solid #4c32269e' ,borderBottom: '1px solid rgba(76, 50, 38, 0.67)',border: '1px solid white' }}
                                                     name="securityQuestion"
                                                     value={formData.securityQuestion}
                                                     onChange={handleInputChange}
@@ -533,15 +533,15 @@ function Register() {
 
                                             <span class="checkmark" style={{ margin: '0px 0px 0px 10px' }}>I agree to the Terms and Conditions</span>
                                         </div>
-                                        <IonButton
+                                        <button
                                             color='secondary'
                                             type='submit'
                                             expand="full"
-                                            style={{ marginTop: '20px', width: '100%', textTransform: 'uppercase' }}
+                                            style={{ marginTop: '20px', width: '100%', textTransform: 'uppercase', padding:'15px', background:'#4c3226' }}
                                             disabled={loading}
                                         >
                                             {loading ? 'Registering...' : 'Register'}
-                                        </IonButton>
+                                        </button>
                                     </form>
                                     <div style={{ justifyContent: 'center', display: 'flex', marginTop: '10px' }}>
                                         Already have an account?{" "}
