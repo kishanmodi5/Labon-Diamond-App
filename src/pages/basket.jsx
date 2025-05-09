@@ -178,8 +178,8 @@ function Basket() {
     };
 
     useEffect(() => {
-        const user = localStorage.getItem('user') || sessionStorage.getItem('user');
-        const branchescode = localStorage.getItem('branches') || sessionStorage.getItem('branches')
+        const user = localStorage.getItem('user') || localStorage.getItem('user');
+        const branchescode = localStorage.getItem('branches') || localStorage.getItem('branches')
         if (user) {
             setCompany(JSON.parse(branchescode)[0].FL_COMPANY_CODE);
             // console.log('user.FL_USER_NAME',JSON.parse(user)?.FL_USER_NAME)

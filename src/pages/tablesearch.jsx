@@ -158,7 +158,7 @@ function Tablesearch() {
             window.alert('Please select stone to add watchlist')
         } else {
 
-            const users = localStorage.getItem('user') || sessionStorage.getItem('user')
+            const users = localStorage.getItem('user') || localStorage.getItem('user')
             const FL_COID = JSON.parse(users).FL_COID
 
             try {

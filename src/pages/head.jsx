@@ -64,9 +64,27 @@ function apps() {
     };
 
 
+    // const handleclearstorage = () => {
+    //     localStorage.clear();
+    // }
+
     const handleclearstorage = () => {
-        sessionStorage.clear();
-    }
+        const rememberMeChecked = localStorage.getItem('rememberMeChecked') === 'true';
+        localStorage.removeItem("token");
+        localStorage.removeItem('user');
+        localStorage.removeItem('branches');
+    
+        if (!rememberMeChecked) {
+            // Only clear credentials if rememberMe was not checked
+            localStorage.removeItem('rememberedUsername');
+            localStorage.removeItem('rememberedPassword');
+            localStorage.removeItem('rememberMeChecked');
+        }
+    
+
+    };
+    
+    
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -83,7 +101,7 @@ function apps() {
 
 
     useEffect(() => {
-        const user = localStorage.getItem('user') || sessionStorage.getItem('user');
+        const user = localStorage.getItem('user') || localStorage.getItem('user');
         // const branchescode = localStorage.getItem('branches') || sessionStorage.getItem('branches')
         if (user) {
             // setCompany(JSON.parse(branchescode)[0].FL_COMPANY_CODE);

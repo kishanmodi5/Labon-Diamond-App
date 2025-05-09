@@ -77,7 +77,7 @@ const Polish = () => {
 
 
 
-  const storedData = sessionStorage.getItem('branches');
+  const storedData = localStorage.getItem('branches');
   const datas = JSON.parse(storedData);
 
 

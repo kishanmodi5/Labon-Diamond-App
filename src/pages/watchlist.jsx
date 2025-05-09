@@ -95,7 +95,7 @@ function Watchlist() {
     }, []);
 
     useEffect(() => {
-        const user = localStorage.getItem('user') || sessionStorage.getItem('user');
+        const user = localStorage.getItem('user') || localStorage.getItem('user');
         if (user) {
             // console.log('user.FL_USER_NAME',JSON.parse(user)?.FL_USER_NAME)
             setClientName(JSON.parse(user)?.FL_USER_NAME)

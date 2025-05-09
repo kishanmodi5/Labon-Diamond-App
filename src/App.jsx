@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext,useEffect  } from 'react';
 import {
   IonTabs,
   IonTabBar,
@@ -49,6 +49,19 @@ function apps() {
   };
 
   const hideTabBarRoutes = ['/login', '/register', '/forget', '/resetpassword'];
+
+  const isAuthenticatedR = () => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    return !!token;
+  };
+
+  const [isAuthenticated, setIsAuthenticated] = useState(isAuthenticatedR());
+
+  useEffect(() => {
+    setIsAuthenticated(isAuthenticatedR());
+  }, []);
+
+
   return (
     <>
 
@@ -56,23 +69,40 @@ function apps() {
         <SearchProvider>
           <BasketProvider>
             <PolishProvider>
-            <IonTabs id="main-content">
-              <IonRouterOutlet>
-                <Redirect exact path="/" to="/login" />
-                <Route path="/home" render={() => <Home></Home>} exact={true} />
-                <Route path="/login" render={() => <Login />} exact={true} />
-                <Route path="/register" render={() => <Register />} exact={true} />
-                <Route path="/changepass" render={() => <Changepass></Changepass>} exact={true} />
-                <Route path="/webhistory" render={() => <Weborder></Weborder>} exact={true} />
-                <Route path="/watchlist" render={() => <Watchlist></Watchlist>} exact={true} />
-                <Route path="/basket" render={() => <Basket></Basket>} exact={true} />
-                <Route path="/tableshow" render={() => <Tablesearch />} exact={true} />
-                <Route path="/polishtableshow" render={() => <Polishtable />} exact={true} />
-                <Route path="/webhistory" render={() => <WebHistory></WebHistory>} exact={true} />
-                <Route path="/webhistorytable" render={() => <WebHistorytable></WebHistorytable>} exact={true} />
-                <Route path="/polish" render={() => <Polish></Polish>} exact={true} />
-              </IonRouterOutlet>
-            </IonTabs>
+              <IonTabs id="main-content">
+                <IonRouterOutlet>
+                  <Route exact path="/">
+                    {isAuthenticated ? <Redirect to="/home" /> : <Redirect to="/login" />}
+                  </Route>
+                  <Route path="/register" component={Register} exact={true} />
+                  <Route path="/webhistory" render={() => <WebHistory></WebHistory>} exact={true} />
+                  <Route
+                    path="/login"
+                    render={() => (isAuthenticated ? <Redirect to="/home" /> : <Login setIsAuthenticated={setIsAuthenticated} />)}
+                    exact={true}
+                  />
+
+
+                  {isAuthenticated ? (
+                    <>
+                      <Route path="/home" render={() => <Home></Home>} exact={true} />
+                      <Route path="/login" render={() => <Login />} exact={true} />
+                      <Route path="/register" render={() => <Register />} exact={true} />
+                      <Route path="/changepass" render={() => <Changepass></Changepass>} exact={true} />
+                      <Route path="/webhistory" render={() => <Weborder></Weborder>} exact={true} />
+                      <Route path="/watchlist" render={() => <Watchlist></Watchlist>} exact={true} />
+                      <Route path="/basket" render={() => <Basket></Basket>} exact={true} />
+                      <Route path="/tableshow" render={() => <Tablesearch />} exact={true} />
+                      <Route path="/polishtableshow" render={() => <Polishtable />} exact={true} />
+                    
+                      <Route path="/webhistorytable" render={() => <WebHistorytable></WebHistorytable>} exact={true} />
+                      <Route path="/polish" render={() => <Polish></Polish>} exact={true} />
+                    </>
+                  ) : (
+                    <Redirect to="/" />
+                  )}
+                </IonRouterOutlet>
+              </IonTabs>
             </PolishProvider>
           </BasketProvider>
         </SearchProvider>

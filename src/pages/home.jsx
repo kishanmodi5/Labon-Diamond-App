@@ -74,7 +74,7 @@ const Home = () => {
     Flour: ["NON", "FNT", "MED", "SL", "VSL", "STG", "VST"],
   };
 
-  const storedData = sessionStorage.getItem('branches');
+  const storedData = localStorage.getItem('branches');
   const datas = JSON.parse(storedData);
   
   // Populate the location category with branch names
